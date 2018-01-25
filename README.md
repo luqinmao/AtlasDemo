@@ -21,18 +21,18 @@ host: 宿主的概念，所有的bundle可以直接调用host内的代码和资�
 
 
 官方demo中文件
-module名 意义
-activitygroupcompat demo中的工具类
-app 客户端代码
-databindbundle 使用Google bind框架demo
-firstbundle 第一个业务bundle代码
-lottie splashScreen依赖的代码
-middlewarelibrary 中间键library，会打包到主dex中
-publicbundle 共bundle代码，不会打入主dex中
-remotebundle 远程bundle，在发布时不会编译进apk，而在客户端使用时，先下载后加载
-secondbundle 第二个业务bundle代码
-secondbundlelibrary 第二个业务单独依赖的代码
-splashScreen 闪屏代码
+     module名 意义
+     activitygroupcompat demo中的工具类
+     app 客户端代码
+     databindbundle 使用Google bind框架demo
+     firstbundle 第一个业务bundle代码
+     lottie splashScreen依赖的代码
+     middlewarelibrary 中间键library，会打包到主dex中
+     publicbundle 共bundle代码，不会打入主dex中
+     remotebundle 远程bundle，在发布时不会编译进apk，而在客户端使用时，先下载后加载
+     secondbundle 第二个业务bundle代码
+     secondbundlelibrary 第二个业务单独依赖的代码
+     splashScreen 闪屏代码
 
 
 退出adb shell :   exit
@@ -68,11 +68,13 @@ DexPatch是以动态部署技术方案为基础，以快速解决线上故障为
 
 
 学习链接：
-     视频讲解：https://edu.aliyun.com/course/68/lesson/list?utm_campaign=aliyunedu&utm_medium=images&utm_source=qq&utm_content=m_24086
+      
 
      系列介绍：http://blog.csdn.net/wdd1324/article/details/76855408
 
-
+      gradle完全指南：https://www.jianshu.com/p/9df3c3b6067a
+      
+      atlas视频讲解：https://edu.aliyun.com/course/68/lesson/list?utm_campaign=aliyunedu&utm_medium=images&utm_source=qq&utm_content=m_24086
 
 
 
