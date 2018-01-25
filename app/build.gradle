@@ -44,6 +44,8 @@ android {
     }
 
 
+    //buildTypes:定义了编译类型，针对每个类型我们可以有不同的编译配置，
+    // 不同的编译配置对应的有不同的编译命令。默认的有debug、release 的类型。
     buildTypes {
         release {
             minifyEnabled true
