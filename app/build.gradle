@@ -1,0 +1,191 @@
+group = 'com.taobao.android.atlasdemo'
+version = getEnvValue("versionName", "1.0.0");
+def apVersion = getEnvValue("apVersion", "");
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.taobao.atlas'  //用于host工程，用于设置对bundle的依赖和其它atlas的功能
+apply plugin: 'com.taobao.atlas.dexpatch'
+apply from: 'dexPatchWraper.gradle'
+
+//通过增加判断逻辑，打出不同类型的定制包
+def appId = "com.taobao.demo"
+def minVersion = 14
+if (project.hasProperty("beta")) {
+	appId = "com.taobao.atlas.beta"
+	minVersion = 21
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+    defaultConfig {
+        applicationId appId
+        minSdkVersion minVersion
+        targetSdkVersion 25
+        versionCode 1
+        versionName version
+        vectorDrawables.useSupportLibrary = true
+        //通过增加判断逻辑，打出不同类型的定制包
+        if (project.hasProperty("beta")) {
+            buildConfigField "boolean", "API_ENV", "false"
+        }else{
+        	buildConfigField "boolean", "API_ENV", "false"
+        }
+    }
+
+
+    dataBinding {
+        enabled = true
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            ndk {
+                abiFilters "x86","armeabi"
+            }
+
+        }
+    }
+
+    //    productFlavors {
+    //        dev {
+    //            minSdkVersion 14
+    //        }
+
+    //        beta {
+    //            minSdkVersion 21
+    //        }
+    //    }
+}
+
+atlas {
+
+    atlasEnabled true //atlas开关，一般接入后都打开
+    tBuildConfig {
+        //自启动bundle配置,跟随应用启动而加载;普通bundle是随运行而加载
+        autoStartBundles = ['com.taobao.firstbundle'] //自启动bundle配置
+        //打包时，不打包到包中的bundle，也就是远程bundle
+        outOfApkBundles = ['remotebundle']
+        //是指在atlas框架启动前需要启动的功能（如：崩溃信息统计。。。），并且在atlas启动前的功能是不能被动态部署的！
+        preLaunch = 'com.taobao.demo.DemoPreLaunch'
+        classInject false
+        dataBindingBundles = ['com.taobao.databindbundle']
+    }
+
+    manifestOptions {
+        addAtlasProxyComponents true
+    }
+
+
+    patchConfigs {
+        debug {
+            createTPatch true
+        }
+    }
+
+
+    buildTypes {
+        debug {
+            if (apVersion) {
+                //基线版本坐标
+                baseApDependency "com.taobao.android.atlasdemo:AP-debug:${apVersion}@ap"
+                patchConfig patchConfigs.debug
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile(rootProject.ext.lib_atlas_core) {
+
+        transitive = true
+    }
+
+
+    compile project(':middlewarelibrary')
+    compile project(':splashscreen')
+    compile project(':activitygroupcompat')
+
+    //这种依赖会当成bundle，打包会打包到apk的lib下，也就是我们的插件了
+    bundleCompile project(':firstbundle')
+    bundleCompile project(':secondbundle')
+    bundleCompile project(':remotebundle')
+    bundleCompile project(':publicbundle')
+    bundleCompile project(':databindbundle')
+
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:design:25.1.0'
+    compile 'com.android.support:support-vector-drawable:25.1.0'
+    compile 'com.android.support:support-v4:25.1.0'
+    compile rootProject.ext.lib_atlas_update
+
+    compile 'com.alibaba:fastjson:1.1.45.android@jar'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha8'
+    compile 'com.android.support:recyclerview-v7:25.3.0'
+}
+
+String getEnvValue(key, defValue) {
+    def val = System.getProperty(key);
+    if (null != val) {
+        return val;
+    }
+    val = System.getenv(key);
+    if (null != val) {
+        return val;
+    }
+    return defValue;
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("DebugAndroidTest")) {
+        task.setEnabled(false);
+    }
+    if (task.name.contains("assemble")) {
+        def files = null;
+        def file = new File(task.project.getBuildDir(), "outputs");
+        if (file.exists() && new File(file, "tpatch-debug").exists()) {
+            files = new File(file, "tpatch-debug").listFiles();
+        }
+        if (files != null) {
+            for (File file1 : files) {
+                if (file1.getName().endsWith(".json") || file1.getName().endsWith(".tpatch")) {
+
+                    if (!new File(task.project.getRootDir(), "hisTpatch").exists()) {
+                        new File(task.project.getRootDir(), "hisTpatch").mkdirs();
+                    }
+                    org.apache.commons.io.FileUtils.copyFileToDirectory(file1, new File(task.project.getRootDir(), "hisTpatch"));
+                }
+            }
+        }
+    }
+}
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+publishing {
+    repositories {
+        mavenLocal()
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifact "${project.buildDir}/outputs/apk/${project.name}-debug.ap"
+            artifactId "AP-debug"
+        }
+    }
+}

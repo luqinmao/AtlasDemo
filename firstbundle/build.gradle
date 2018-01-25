@@ -1,0 +1,55 @@
+//com.android.library 对应bundle工程，用于将module转化成atlas所需要的bundle依赖，不会侵入正常的开发环境
+apply plugin: 'com.android.library' //(这个要注意 这里是library不是application 并且在android中没有id设置！！！！！！)
+apply plugin: 'com.taobao.atlas'
+
+atlas {
+    bundleConfig {
+        //标明这是一个bundle工程，产物会生成awb文件，也就是最后打入包中的so文件
+        awbBundle true
+    }
+    buildTypes {
+        debug {
+            //基线版本位置
+            baseApFile project.rootProject.file('app/build/outputs/apk/app-debug.ap')
+        }
+    }
+}
+group = 'com.atlas.demo'
+version = '1.0.1'
+
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+//    dataBinding {
+//        enabled = true
+//    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    providedCompile project(':middlewarelibrary')
+    providedCompile project(':publicbundle')
+
+    compile 'com.android.support.constraint:constraint-layout:1.0.0'
+    providedCompile 'com.android.support:support-v4:25.3.0'
+    providedCompile 'com.android.support:appcompat-v7:25.1.0'
+    providedCompile rootProject.ext.lib_atlas_core
+    providedCompile 'com.android.support.constraint:constraint-layout:1.0.0-alpha8'
+}
